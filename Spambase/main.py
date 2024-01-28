@@ -1,29 +1,17 @@
 import pandas as pd
 import vowpalwabbit as vw
-from vowpalwabbit.dftovw import DFtoVW, SimpleLabel, Feature
-import random
+from fileio import read_df_from_file, convert_df_to_vw
+from Expert import Expert
 
-DATA_PATH = "dataset/spambase.data"
-NAMES_PATH = "dataset/spambase.names"
-LABEL_COL_NAME = "is_spam"
-df: pd.DataFrame = pd.read_csv(DATA_PATH, header=None)
-with open(NAMES_PATH, 'r') as f:
-    features_unparsed: list[str] = f.readlines()[1-len(df.columns)::]
-features: list[str] = [column[:column.index(':'):] for column in features_unparsed]
-columns: list[str] = features + [LABEL_COL_NAME]
-df.columns = columns
+df: pd.DataFrame; features: list[str]; training_examples: list[str]
+df, features = read_df_from_file()
+training_examples = convert_df_to_vw(df, features)
 
-converter: DFtoVW = DFtoVW(
-    df=df,
-    features=[Feature(feature) for feature in features],
-    label=SimpleLabel(LABEL_COL_NAME)
-)
-training_examples: list[str] = converter.convert_df()
-random.shuffle(training_examples)
-
-model = vw.Workspace(P=1, enable_logging=True)
-
+learning_rate: float = 0.5
+loss: str = "hinge"
+expert: Expert = Expert(features=features, learning_rate=learning_rate, loss_function=loss)
 for ex in training_examples:
-    model.learn(ex)
+    expert.learn(ex)
 
-model.finish()
+for log in expert.get_log():
+    print(log)
