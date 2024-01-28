@@ -24,5 +24,5 @@ class Expert:
 
     def get_log(self) -> tuple[list[str], pd.DataFrame]:
         self.model.finish()
-        logs: list[str] = self.model.get_logs()
+        logs: list[str] = self.model.get_log()
         return logs
