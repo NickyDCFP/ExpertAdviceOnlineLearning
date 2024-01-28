@@ -1,5 +1,4 @@
 import pandas as pd
-import vowpalwabbit as vw
 from fileio import read_df_from_file, convert_df_to_vw
 from Expert import Expert
 
@@ -13,5 +12,5 @@ expert: Expert = Expert(features=features, learning_rate=learning_rate, loss_fun
 for ex in training_examples:
     expert.learn(ex)
 
-for log in expert.get_log():
-    print(log)
+logs: list[str]; history: pd.DataFrame
+logs, history = expert.get_log()

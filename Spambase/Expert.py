@@ -1,6 +1,7 @@
 import vowpalwabbit as vw
 import pandas as pd
-import regex as re
+from constants import EXPERT_METRICS
+import re
 
 class Expert:
     def __init__(self, features: list[str], learning_rate: float, loss_function: str):
@@ -25,4 +26,9 @@ class Expert:
     def get_log(self) -> tuple[list[str], pd.DataFrame]:
         self.model.finish()
         logs: list[str] = self.model.get_log()
-        return logs
+        history: pd.DataFrame = pd.DataFrame(columns=EXPERT_METRICS)
+        for log in logs:
+            if re.match("^[\d|.| |-]+$", log) and log.replace(" ", "") != "":
+                history_parsed: list[str] = re.findall("[\d|.|-][\d|.|-]*", log)
+                history.loc[len(history)] = [float(metric) for metric in history_parsed]
+        return logs, history
