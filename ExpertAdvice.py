@@ -4,6 +4,16 @@ import pandas as pd
 from constants import METRICS, LABEL_FORMAT_INDEX
 class ExpertAdvice:
     def __init__(self, experts: list[Expert], alpha: float = 0, learning_rate: float = 0.5):
+        """
+        Constructor for the ExpertsAdvice class.
+
+        Parameters:
+            experts:        the ExpertAdvice's pre-initialized online learner. Do not need to be
+                            pre-trained.
+            alpha:          the sharing ratio for the fixed-share algorithm. 
+                            Set to 0 for static-expert.
+            learning_rate:  the learning rate for the learner.
+        """
         self.experts: list[Expert] = experts
         n = len(experts)
         self.alpha: float = alpha
@@ -20,10 +30,25 @@ class ExpertAdvice:
         )
 
     def predict(self, ex: str) -> float:
+        """
+        Predicts on an example and returns the prediction.
+
+        Parameters:
+            ex:     the example to be predicted on.
+        
+        Returns:
+            the learner's prediction on the example.
+        """
         predictions: np.ndarray = np.array([expert.predict(ex) for expert in self.experts])
         return predictions.dot(self.p)
     
     def learn(self, ex: str) -> None:
+        """
+        Predicts on an example, prompts the experts to learn, and updates the learner weights.
+
+        Parameters:
+            ex:     the example to be learned from.
+        """
         expert_outputs: pd.DataFrame = pd.DataFrame(columns=METRICS)
         for expert in self.experts:
             expert_outputs.loc[len(expert_outputs)] = expert.learn(ex)
@@ -52,7 +77,20 @@ class ExpertAdvice:
         self.weight_df.loc[len(self.weight_df)] = self.p.T
     
     def get_log(self) -> tuple[pd.DataFrame, list[pd.DataFrame]]:
+        """
+        Retrieves the experts' logs as well as the learner's history DataFrame.
+
+        Returns:
+            The learner's accuracy metrics at every timestep and the experts' accuracy metrics
+            at every timestep.
+        """
         return self.history, [expert.get_log() for expert in self.experts]
 
-    def get_weights(self) -> pd.DataFrame:
-        return self.weight_df
+    def get_weight_history(self) -> pd.DataFrame:
+        """
+        Retrieves the evolution of the learner and expert weights over time.
+
+        Returns:
+            The learner's weights at every timestep and the experts' weights at every timestep.
+        """
+        return self.weight_df, [expert.get_weight_history() for expert in self.experts]
