@@ -1,3 +1,7 @@
+"""
+An implementation of the Static-Expert and Fixed-Share (alpha) algorithms for online
+learning in the expert advice setting.
+"""
 from Expert import Expert
 import numpy as np
 import pandas as pd
